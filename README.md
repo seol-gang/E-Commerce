@@ -11,3 +11,6 @@
 ```bash
 docker-compose up -d
 ```
+---
+## Milestone
+### 마일스톤 링크: [Notion](https://www.notion.so/f9f21f9c7ade404e9d769986f7b2617e?pvs=4)
