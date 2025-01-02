@@ -1,0 +1,270 @@
+openapi: 3.0.3
+info:
+  title: 이커머스 시스템
+  description: |-
+    이커머스 시스템에서 사용되는 API 문서화 자료 입니다.
+  version: 0.0.1
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: localhost
+tags:
+  - name: balance
+    description: 금액 관련 API
+  - name: products
+    description: 상품 관련 API
+  - name: order
+    description: 구매 관련 API
+  - name: coupons
+    description: 쿠폰 관련 API
+paths:
+  /balance:
+    get:
+      tags:
+        - balance
+      summary: 잔액 조회 API
+      description: 유저의 잔액을 조회하는 API
+      responses:
+        '200':
+          description: 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: integer
+                    format: int
+                    example: 1
+                  balance:
+                    type: integer
+                    format: int
+                    example: 10000
+        '401':
+          description: 로그인 되어있지 않은 유저
+      security:
+        - bearerAuth: []
+        
+  /balance/charge:
+    post:
+      tags:
+        - balance
+      summary: 잔액 충전 API
+      description: 유저의 잔액을 충전하는 API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Balance'
+      responses:
+        '200':
+          description: 충전 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Balance'
+        '400':
+          description: 충전 금액이 조건에 맞지 않을 경우
+      security:
+        - bearerAuth: []
+    
+  /products:
+    get:
+      tags:
+        - products
+      summary: 상품 전체 조회 API
+      description: 등록된 상품 전체를 가져오는 API
+      responses:
+        '200':
+          description: 가져오기 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Products'
+                
+  /products/{productId}:
+    get:
+      tags:
+        - products
+      summary: 특정 상품 조회 API
+      description: 특정 상품 정보를 가져오는 API
+      parameters:
+        - in: path
+          name: productId
+          schema:
+            type: integer
+          required: true
+          description: 상품 ID
+      responses:
+        '200':
+          description: 가져오기 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+                
+  /products/top-5:
+    get:
+      tags:
+        - products
+      summary: 판매량 상위 5개 상품 조회 API
+      description: 판매량 상위 5개 상품 정보를 가져오는 API
+      responses:
+        '200':
+          description: 가져오기 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Products'
+      
+  /order:
+    post:
+      tags:
+        - order
+      summary: 상품 구매 요청 API
+      description: 유저의 상품 구매 요청 API
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequest'
+      responses:
+        '200':
+          description: 주문 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '409':
+          description: 재고 부족으로 인한 주문 실패
+        '422':
+          description: 쿠폰 사용 시 문제 발생
+      security:
+        - bearerAuth: []
+        
+  /coupons/{couponId}:
+    post:
+      tags:
+        - coupons
+      summary: 쿠폰 발금 요청 API
+      description: 유저의 쿠폰 발급 요청 API
+      parameters:
+        - in: path
+          name: couponId
+          schema:
+            type: integer
+          required: true
+          description: 쿠폰 ID
+      responses:
+        '200':
+          description: 발급 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coupon'
+        '409':
+          description: 발급 한도 초과
+      security:
+        - bearerAuth: []
+    
+components:
+  schemas:
+    Balance:
+      type: object
+      properties:
+        balance:
+          type: integer
+          format: int64
+          example: 198772
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 9
+        name:
+          type: string
+          example: 후드티
+        description:
+          type: string
+          example: 아주 멋진 후드티
+        price:
+          type: integer
+          format: int64
+          example: 30000
+        stock_quantity:
+          type: integer
+          format: int64
+          example: 100
+    Products:
+      type: array
+      items:
+        $ref: '#/components/schemas/Product'
+    OrderProperty:
+      type: object
+      properties:
+        productId: 
+          type: integer
+          format: int64
+          example: 1
+        stock:
+          type: integer
+          format: int64
+          example: 3
+    Order:
+      type: array
+      items:
+        $ref: '#/components/schemas/OrderProperty'
+    OrderRequest:
+      type: object
+      properties:
+        order:
+          $ref: '#/components/schemas/Order'
+        couponId:
+          type: integer
+          format: int64
+          example: 1
+          nullable: true
+    OrderResponse:
+      type: object
+      properties:
+        orderId:
+          type: integer
+          format: int64
+          example: 3
+        orderHistory:
+          $ref: '#/components/schemas/Order'
+    Coupon:
+      type: object
+      properties:
+        couponId:
+          type: integer
+          format: int
+          example: 4
+        expiredAt:
+          type: string
+          format: date-time
+          example: "2024-01-20T09:00:00Z"
+        discountType:
+          type: string
+          example: 'percent'
+        discountValue:
+          type: integer
+          format: int
+          example: 10
+        minimumOrderAmount:
+          type: integer
+          format: int
+          example: 30000
+        maximumDiscountAmount:
+          type: integer
+          format: int
+          example: 5000
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: number

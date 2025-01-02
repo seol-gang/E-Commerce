@@ -55,3 +55,7 @@ docker-compose up -d
 
 ## ERD
 ![ERD](static/E-commerce-ERD.svg)
+
+## API 명세서
+* openapi.yaml 파일 참고
+* https://editor.swagger.io/ -> File -> Import File -> 파일 선택
